@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
-import { BOOK_URL } from '../js/config.js';
+import { BOOK_URL, GA_MEASUREMENT_ID } from '../js/config.js';
 
 const html = readFileSync('index.html', 'utf8');
 const meta = (attr, key) => new RegExp(`<meta ${attr}="${key}" content="([^"]*)"`).exec(html)?.[1];
@@ -31,8 +31,17 @@ describe('index.html', () => {
     for (const r of refs) expect(r.startsWith('/'), r).toBe(false);
     for (const r of refs.filter((x) => !x.startsWith('http'))) expect(existsSync(r), r).toBe(true);
   });
-  it('不載入任何外部資源（沒有第三方腳本、字型、追蹤碼）', () => {
+  it('外部資源只有 Google Analytics 的 Google 代碼一個（沒有其他第三方腳本、字型）', () => {
     const external = [...html.matchAll(/<(?:script|link)[^>]+(?:src|href)="(https?:[^"]+)"/g)].map((m) => m[1]);
-    expect(external).toEqual([]);
+    expect(external).toEqual([`https://www.googletagmanager.com/gtm.js?id=${GA_MEASUREMENT_ID}`]);
+  });
+  it('Google 代碼：照 GA 後台給的寫法，ID 和 config.js 一致、非同步載入、放在 <head>', () => {
+    expect(GA_MEASUREMENT_ID).toMatch(/^G-[A-Z0-9]{8,12}$/);
+    const head = html.slice(0, html.indexOf('</head>'));
+    expect(head).toContain(`<script async src="https://www.googletagmanager.com/gtm.js?id=${GA_MEASUREMENT_ID}"></script>`);
+    expect(head).toContain('window.dataLayer = window.dataLayer || [];');
+    expect(head).toContain("gtag('js', new Date());");
+    // 整份頁面只出現這一個評估 ID（換 ID 時不會漏改）
+    expect([...new Set(html.match(/G-[A-Z0-9]{8,12}/g))]).toEqual([GA_MEASUREMENT_ID]);
   });
 });

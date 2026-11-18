@@ -5,6 +5,10 @@ export const BOOK_SUBTITLE = '互動電子書・十善大地';
 // （tests/html.test.js 會守門）。
 export const BOOK_URL = 'https://gustarsmile.github.io/ten-virtues-sutra/';
 
+// Google Analytics 4：帳戶「Ten Virtues Sutra」／資源 ten-virtues-sutra／網頁串流 16369018709（2026-11-19 建立）。
+// 代碼本身寫在 index.html 的 <head>；換 ID 時兩邊要一起改（tests/html.test.js 會檢查）。
+export const GA_MEASUREMENT_ID = 'G-3K95NEBV8G';
+
 export const SAVE_KEY = 'shishanBook.v1';
 export const DAILY_KEY = 'shishanDaily.v1';
 

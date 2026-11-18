@@ -412,6 +412,11 @@ describe('目錄與關於', () => {
       expect(text(), s).toContain(s);
     }
   });
+  it('關於本書：照實說明有用 Google Analytics 統計瀏覽，而且不包含閱讀紀錄', () => {
+    app.go('about');
+    expect(text()).toContain('Google Analytics');
+    expect(text()).toMatch(/Google Analytics[^。]*不包含/);
+  });
   it('清除進度要按兩次才生效', () => {
     store.lightPearl('ch03', 0);
     app.go('about');
