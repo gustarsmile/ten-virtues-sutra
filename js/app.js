@@ -3,6 +3,7 @@ import { parseRoute, toHash } from './router.js';
 import { pages, nextRoute, prevRoute } from './book.js';
 import { BOOK_TITLE, TOTAL_PEARLS } from './config.js';
 import { el, button, append } from './ui/dom.js';
+import { hasOpenLayer } from './ui/layer.js';
 import { renderCover } from './ui/coverView.js';
 import { renderToc } from './ui/tocView.js';
 import { renderChapter } from './ui/chapterView.js';
@@ -91,17 +92,20 @@ export function createApp({ root, book, store, daily, speech, win = globalThis.w
   }
 
   // 瀏覽器的上一頁／下一頁、手動改網址。go() 自己已經畫過的不重畫
-  win.addEventListener('hashchange', () => {
+  const onHashChange = () => {
     if (parseRoute(win.location.hash, book.chapters.length).route !== current) render();
-  });
+  };
+  win.addEventListener('hashchange', onHashChange);
 
   // 鍵盤左右鍵翻頁（正在打字或操作控制項時不搶）
-  doc.addEventListener('keydown', (e) => {
+  const onKeydown = (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (hasOpenLayer()) return; // 大圖開著：方向鍵不翻頁，Esc 交給 layer.js
     if (e.target?.closest?.('input, textarea, select')) return;
     const to = e.key === 'ArrowRight' ? ctx.next(current) : e.key === 'ArrowLeft' ? ctx.prev(current) : undefined;
     if (to != null) go(to);
-  });
+  };
+  doc.addEventListener('keydown', onKeydown);
 
   // 手機左右滑翻頁：水平位移要夠長、而且明顯大於垂直位移，避免上下捲動時誤翻
   let start = null;
@@ -120,5 +124,12 @@ export function createApp({ root, book, store, daily, speech, win = globalThis.w
     if (to != null) go(to);
   }, { passive: true });
 
-  return { render, go };
+  // 掛在 window／document 上的監聽要能拿掉：同一頁若重建 app（測試、日後的熱重載），
+  // 舊的那個不該繼續跟著翻頁
+  function destroy() {
+    win.removeEventListener('hashchange', onHashChange);
+    doc.removeEventListener('keydown', onKeydown);
+  }
+
+  return { render, go, destroy };
 }

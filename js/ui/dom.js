@@ -1,4 +1,5 @@
 // 建立 DOM 的小工具。全書不用 innerHTML 塞資料，文字一律走 textContent。
+import { enableLightbox } from './lightbox.js';
 
 export function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -20,15 +21,25 @@ export function append(parent, ...children) {
   return parent;
 }
 
-// 插圖：CSS 先用 aspect-ratio 佔好位置；圖載不到時整個框收起來，不留破圖
-export function artFigure(file, alt, className = 'art-frame') {
+// 插圖：CSS 先用 aspect-ratio 佔好位置；圖載不到時整個框收起來，不留破圖。
+// 預設可以點開放大：圖包在一顆 <button> 裡，滑鼠、觸控、鍵盤都開得了。
+export function artFigure(file, alt, className = 'art-frame', { zoom = true } = {}) {
   const fig = el('figure', className);
   const img = el('img');
   img.src = `assets/art/${file}`;
   img.alt = alt;
   img.decoding = 'async';
   img.addEventListener('error', () => fig.classList.add('art-missing'));
-  fig.appendChild(img);
+  if (!zoom) {
+    fig.appendChild(img);
+    return fig;
+  }
+  const btn = el('button', 'zoom-btn');
+  btn.type = 'button';
+  btn.setAttribute('aria-label', `放大圖片：${alt}`);
+  btn.appendChild(img);
+  enableLightbox(btn, img);
+  fig.appendChild(btn);
   return fig;
 }
 

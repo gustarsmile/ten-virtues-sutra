@@ -41,7 +41,9 @@ function benefitsBlock(block, ch, ctx) {
     pearl.type = 'button';
     pearl.setAttribute('aria-label', `第 ${i + 1} 顆寶珠`);
     const { node, note } = rawWithTerms(item.raw, item.terms, book.glossary);
-    const plain = el('p', 'plain', item.plain);
+    const plain = el('div', 'plain');
+    plain.appendChild(el('p', null, item.plain));
+    if (item.note) plain.appendChild(el('p', 'collation', item.note));
 
     const show = (lit) => {
       pearl.classList.toggle('lit', lit);

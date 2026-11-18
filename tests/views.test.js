@@ -19,6 +19,7 @@ function fakeSpeech() {
 
 let root; let store; let daily; let app;
 function boot({ speech = noSpeech(), storage = memoryStorage(), hash = '' } = {}) {
+  app?.destroy(); // 上一個測試的 app 不要留在頁面上繼續聽鍵盤
   window.location.hash = hash;
   root = document.createElement('div');
   document.body.innerHTML = '';
