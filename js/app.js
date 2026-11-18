@@ -26,6 +26,14 @@ export function routeTitle(book, route) {
   return r.name === 'ch' ? book.chapters[r.no - 1].title : FIXED_TITLES[r.name] || '封面';
 }
 
+// 送給 GA 的網址：把書頁的路由當成路徑（…/ten-virtues-sutra/ch/3），不用 #。
+// GA 報表的「網頁路徑」不看 # 後面，用 # 的話十五章會全部算成同一頁。
+// 這些路徑只出現在 GA 報表裡，伺服器上並沒有這些網址。
+export function pageViewUrl(loc, route) {
+  const dir = loc.pathname.replace(/[^/]*$/, ''); // /book/index.html → /book/
+  return `${loc.origin}${dir}${route}`;
+}
+
 // 是不是被嵌在別人的網頁裡（部落格文章的 iframe）。跨網域時讀 top 會丟例外，那也算是
 function detectEmbedded(win) {
   try { return win.self !== win.top; } catch { return true; }
@@ -36,6 +44,7 @@ export function createApp({ root, book, store, daily, speech, win = globalThis.w
   const order = pages(book.chapters);
   let current = null;
   let rendered = false;
+  let tracked = null; // 上一次送給 GA 的路由（同一頁重畫不重送）
 
   // 頂列：目錄｜書名（回封面）｜寶珠數（到十善大地）
   const topbar = el('header', 'topbar');
@@ -97,7 +106,20 @@ export function createApp({ root, book, store, daily, speech, win = globalThis.w
         h1.focus({ preventScroll: true });
       }
     }
+    trackPageView(r.route, !rendered);
     rendered = true;
+  }
+
+  // 每翻到新的一頁送一筆 page_view 給 GA，標題就是章名，報表裡看得出各章有多少人讀。
+  // 第一次載入不送：Google 代碼自己會送第一筆，再送就重複了。
+  // 沒有 Google 代碼（被擋廣告的外掛擋掉、離線）就什麼都不做；GA 出錯也不能影響翻頁。
+  function trackPageView(route, first) {
+    if (route === tracked) return;
+    tracked = route;
+    if (first || typeof win.gtag !== 'function') return;
+    try {
+      win.gtag('event', 'page_view', { page_title: doc.title, page_location: pageViewUrl(win.location, route) });
+    } catch { /* 不影響閱讀 */ }
   }
 
   function preloadNext(route) {

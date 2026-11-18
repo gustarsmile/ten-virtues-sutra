@@ -16,6 +16,8 @@
 
 進度只存在讀者自己的瀏覽器裡（`localStorage`），沒有帳號。唯一的外部資源是 Google Analytics 的 Google 代碼（GA4 評估 ID `G-3K95NEBV8G`，GA 帳戶「Ten Virtues Sutra」416892633、資源 ten-virtues-sutra 565065016，2026-11-19 加入），只統計瀏覽，不碰閱讀紀錄；「關於本書」頁有照實說明。代碼寫在 `index.html` 的 `<head>`，ID 另外記在 `js/config.js` 的 `GA_MEASUREMENT_ID`，換 ID 時兩邊一起改（`tests/html.test.js` 會檢查）。
 
+GA 自己只會在打開網頁時算一次瀏覽，看不到書裡翻頁（換的只是 `#` 後面）。所以 `js/app.js` 每翻到新的一頁會自己送一筆 `page_view`：標題是章名（例如「離殺生｜十善業道經」），網址用路由當路徑（`…/ten-virtues-sutra/ch/3`）。在 GA 的「網頁和畫面」報表就能看到各章有多少人讀。第一次載入不送（Google 代碼自己會送），同一頁重畫也不重送。
+
 ## 執行
 
 ```bash
