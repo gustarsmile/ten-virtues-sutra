@@ -1,0 +1,38 @@
+import { describe, it, expect } from 'vitest';
+import { readFileSync, existsSync } from 'node:fs';
+import { BOOK_URL } from '../js/config.js';
+
+const html = readFileSync('index.html', 'utf8');
+const meta = (attr, key) => new RegExp(`<meta ${attr}="${key}" content="([^"]*)"`).exec(html)?.[1];
+
+describe('index.html', () => {
+  it('語言標成繁體中文、有 viewport', () => {
+    expect(html).toMatch(/<html lang="zh-Hant">/);
+    expect(meta('name', 'viewport')).toContain('width=device-width');
+  });
+  it('有標題、描述、theme-color', () => {
+    expect(html).toMatch(/<title>十善業道經[^<]*<\/title>/);
+    expect(meta('name', 'description').length).toBeGreaterThan(40);
+    expect(meta('name', 'theme-color')).toBe('#0d3d4a');
+  });
+  it('favicon 連結存在，檔案也存在', () => {
+    expect(html).toMatch(/rel="icon"[^>]*href="assets\/favicon\.svg"/);
+    expect(existsSync('assets/favicon.svg')).toBe(true);
+  });
+  it('og:url、og:image 和 BOOK_URL 一致（改網址時兩邊要一起改）', () => {
+    expect(BOOK_URL).toMatch(/^https:\/\/.+\/$/);
+    expect(meta('property', 'og:url')).toBe(BOOK_URL);
+    expect(meta('property', 'og:image')).toBe(`${BOOK_URL}assets/og.png`);
+    expect(meta('property', 'og:title')).toBeTruthy();
+    expect(meta('property', 'og:description')).toBeTruthy();
+  });
+  it('資源都用相對路徑（放在 GitHub Pages 的子目錄下才載得到）', () => {
+    const refs = [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map((m) => m[1]);
+    for (const r of refs) expect(r.startsWith('/'), r).toBe(false);
+    for (const r of refs.filter((x) => !x.startsWith('http'))) expect(existsSync(r), r).toBe(true);
+  });
+  it('不載入任何外部資源（沒有第三方腳本、字型、追蹤碼）', () => {
+    const external = [...html.matchAll(/<(?:script|link)[^>]+(?:src|href)="(https?:[^"]+)"/g)].map((m) => m[1]);
+    expect(external).toEqual([]);
+  });
+});

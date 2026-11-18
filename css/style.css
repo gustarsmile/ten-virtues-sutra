@@ -1,0 +1,349 @@
+/* 主題：海底龍宮的經卷
+   深海青 --sea、碧玉 --jade、宣紙 --paper、鎏金 --gold、珍珠（寶珠） */
+:root {
+  color-scheme: light;
+  --sea-900: #072730;
+  --sea-800: #0d3d4a;
+  --sea-700: #11505f;
+  --sea-500: #1f7a82;
+  --jade: #2e9a88;
+  --jade-soft: #dcefe9;
+  --paper: #fcf8ec;
+  --paper-3: #ece2c6;
+  --line: #dccfa8;
+  --ink: #22302f;
+  --ink-2: #51605c;
+  --ink-3: #7b8985;
+  --gold: #94700f;
+  --gold-2: #d6b256;
+  --gold-3: #f3e3a8;
+  --coral: #b84f3b;
+  --serif: "Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", serif;
+  --sans: system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  --pearl-lit: radial-gradient(circle at 35% 30%, #fff, #fdf3cf 40%, #e9c765 78%, #b58a1f);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: radial-gradient(120% 80% at 50% 0%, #17667a 0%, var(--sea-800) 45%, var(--sea-900) 100%) fixed;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  position: relative;
+  max-width: 560px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: linear-gradient(180deg, #fdfaf0, #f8f1de);
+  box-shadow: 0 0 0 1px rgba(214, 178, 86, 0.35), 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+:focus-visible { outline: 3px solid var(--gold-2); outline-offset: 2px; }
+
+h1, h2, h3, p, blockquote, figure { margin: 0; }
+
+/* ── 頂列 ── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  height: 50px;
+  padding: 0 8px;
+  background: var(--sea-800);
+  border-bottom: 2px solid var(--gold-2);
+  color: #fbf3d9;
+}
+.topbar button {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+.topbar .tb-title { font-family: var(--serif); font-size: 1.05rem; letter-spacing: 0.22em; color: var(--gold-3); }
+.tb-pearls { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.tb-pearls::before { content: ""; width: 13px; height: 13px; border-radius: 50%; background: var(--pearl-lit); box-shadow: 0 0 6px rgba(233, 199, 101, 0.8); }
+
+/* ── 版面 ── */
+.view { padding: 22px 20px 56px; }
+.page h1 { font-family: var(--serif); font-size: 2rem; line-height: 1.4; letter-spacing: 0.12em; color: var(--sea-800); }
+h2 { font-family: var(--serif); font-size: 1.2rem; letter-spacing: 0.2em; color: var(--sea-700); }
+.ch-kicker { margin-bottom: 4px; font-size: 0.85rem; letter-spacing: 0.15em; color: var(--gold); }
+.ch-sub { margin: 2px 0 16px; font-size: 1.05rem; color: var(--ink-2); }
+.lead { margin-bottom: 22px; color: var(--ink-2); }
+.hint { margin: 8px 0 12px; font-size: 0.86rem; color: var(--ink-3); }
+
+.art-frame {
+  aspect-ratio: 3 / 2;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border: 1px solid var(--gold-2);
+  border-radius: 12px;
+  background: var(--paper-3);
+  box-shadow: 0 6px 18px rgba(13, 61, 74, 0.18);
+}
+.art-frame img, .cover-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.art-missing { display: none; }
+
+/* ── 按鈕 ── */
+.btn {
+  min-height: 44px;
+  padding: 9px 18px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--sea-700);
+  font: inherit;
+  font-size: 0.98rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.btn.primary { border-color: var(--gold-2); background: var(--sea-700); color: #fdf6df; }
+.btn.small { min-height: 34px; padding: 4px 13px; font-size: 0.85rem; }
+.btn.danger { border-color: var(--coral); color: var(--coral); }
+.btn:disabled { opacity: 0.6; cursor: default; }
+.link { padding: 6px 4px; border: 0; background: none; color: var(--sea-500); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+/* ── 封面 ── */
+.cover { margin: -22px -20px -56px; }
+.cover-art { aspect-ratio: 3 / 2; overflow: hidden; background: var(--sea-800); border-bottom: 2px solid var(--gold-2); }
+.cover-body { padding: 26px 24px 44px; text-align: center; }
+.cover-kicker { margin-bottom: 8px; font-size: 0.85rem; letter-spacing: 0.4em; color: var(--gold); }
+.cover h1 { padding-left: 0.25em; font-size: 2.5rem; letter-spacing: 0.25em; }
+.cover-by { margin: 8px 0 18px; font-size: 0.86rem; letter-spacing: 0.08em; color: var(--ink-3); }
+.cover-intro { max-width: 26em; margin: 0 auto 24px; text-align: left; color: var(--ink-2); }
+.cover-actions { display: grid; gap: 10px; max-width: 340px; margin: 0 auto 14px; }
+.cover-progress { margin-bottom: 4px; font-size: 0.9rem; color: var(--gold); }
+.cover-links { display: flex; justify-content: center; gap: 16px; margin-top: 8px; }
+
+/* ── 經文 ── */
+.sec-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.sec-tools { display: flex; gap: 8px; }
+.passage { margin-bottom: 22px; }
+.raw-line { font-family: var(--serif); font-size: 1.22rem; line-height: 2.05; letter-spacing: 0.05em; color: #1c2726; }
+.plain {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--jade);
+  border-radius: 0 8px 8px 0;
+  background: rgba(46, 154, 136, 0.09);
+  font-size: 0.98rem;
+  line-height: 1.8;
+  color: var(--ink-2);
+}
+.term {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 2px dotted var(--gold-2);
+  border-radius: 2px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.term[aria-expanded="true"] { background: var(--gold-3); }
+.gloss-note {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--gold-2);
+  border-radius: 10px;
+  background: #fff7d6;
+  font-size: 0.93rem;
+  line-height: 1.7;
+}
+.gloss-note strong { font-family: var(--serif); color: var(--gold); }
+
+/* ── 清單標頭（功德名目） ── */
+/* 第一列：名目（左）＋已點亮幾顆（右）；第二列：白話說明，整列寬 */
+.list-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--sea-800);
+  color: #fbf3d9;
+}
+.list-name { font-family: var(--serif); font-size: 1.15rem; letter-spacing: 0.15em; color: var(--gold-3); }
+.list-note { grid-column: 1 / -1; grid-row: 2; font-size: 0.9rem; opacity: 0.92; }
+.pearl-count { grid-column: 2; grid-row: 1; font-size: 0.88rem; color: var(--gold-3); white-space: nowrap; }
+
+/* ── 功德寶珠 ── */
+.pearl-list { margin: 0; padding: 0; list-style: none; }
+.pearl-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; }
+.pearl-row.lit { cursor: default; }
+.pearl-body { flex: 1; min-width: 0; }
+.pearl-row .raw-line { font-size: 1.15rem; line-height: 1.9; }
+.pearl {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  margin-top: 5px;
+  padding: 0;
+  border: 1px solid #b4c1bd;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f4f7f6, #cfd9d6 60%, #aab8b4);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: box-shadow 0.4s;
+}
+.pearl.lit { border-color: var(--gold-2); background: var(--pearl-lit); box-shadow: 0 0 0 3px rgba(214, 178, 86, 0.25), 0 0 14px rgba(233, 199, 101, 0.85); cursor: default; }
+.pearl.pop { animation: pop 0.5s ease-out; }
+@keyframes pop { 0% { transform: scale(0.7); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
+.virtue-done, .match-done {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--gold-2);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fff7d6, #f6e7b0);
+  color: #57420d;
+}
+
+/* ── 可展開的清單（第 13、14 章） ── */
+.fold-group { margin: 20px 0 2px; font-size: 0.9rem; letter-spacing: 0.1em; color: var(--gold); }
+.fold-row { padding: 12px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; }
+.fold-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0 0 4px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.fold-label { padding: 1px 11px; border-radius: 999px; background: var(--sea-700); color: #fbf3d9; font-size: 0.82rem; letter-spacing: 0.08em; }
+.fold-chev { font-size: 0.82rem; color: var(--jade); }
+.fold-chev::after { content: " ▾"; }
+.fold-row.open .fold-chev::after { content: " ▴"; }
+.fold-row .raw-line { font-size: 1.15rem; line-height: 1.9; }
+.collation { margin-top: 6px; font-size: 0.86rem; color: var(--ink-3); }
+
+/* ── 十善一覽（第 2 章） ── */
+.overview { margin-top: 30px; }
+.overview-group { margin: 16px 0 8px; font-size: 0.9rem; letter-spacing: 0.06em; color: var(--gold); }
+.overview-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.overview-chip { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.chip-name { font-family: var(--serif); font-size: 1.1rem; letter-spacing: 0.1em; color: var(--sea-800); }
+.chip-sub, .chip-pearls { font-size: 0.8rem; color: var(--ink-3); }
+.chip-pearls.done { color: var(--jade); font-weight: 600; }
+
+/* ── 情境題 ── */
+.scenario, .cta { margin-top: 30px; padding: 18px 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 4px 14px rgba(13, 61, 74, 0.08); }
+.scenario h2 { margin-bottom: 10px; }
+.prompt { margin-bottom: 14px; font-size: 1.05rem; }
+.options { display: grid; gap: 10px; }
+.option { padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); font: inherit; line-height: 1.6; text-align: left; cursor: pointer; }
+.option.chosen { border-color: var(--jade); background: var(--jade-soft); }
+.reply { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: var(--sea-800); color: #f6f1dc; line-height: 1.8; }
+.scenario .hint { margin-bottom: 0; }
+.cta { text-align: center; border-color: var(--gold-2); }
+.cta p { margin-bottom: 14px; color: var(--ink-2); }
+
+.takeaway { margin: 30px 0 0; padding: 16px 10px; border-top: 1px solid var(--gold-2); border-bottom: 1px solid var(--gold-2); font-family: var(--serif); font-size: 1.15rem; letter-spacing: 0.06em; text-align: center; color: var(--sea-700); }
+
+.pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; }
+.pager-next { margin-left: auto; }
+
+/* ── 目錄 ── */
+.toc-section { margin: 22px 0 8px; font-family: var(--sans); font-size: 0.85rem; letter-spacing: 0.2em; color: var(--gold); }
+.toc-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; margin-bottom: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.toc-no { flex: 0 0 2em; font-family: var(--serif); font-size: 1.05rem; text-align: center; color: var(--gold); }
+.toc-text { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.toc-title { font-family: var(--serif); font-size: 1.12rem; letter-spacing: 0.1em; color: var(--sea-800); }
+.toc-sub { font-size: 0.85rem; color: var(--ink-3); }
+.toc-mark { font-size: 0.82rem; color: var(--ink-3); white-space: nowrap; }
+.toc-mark.done { color: var(--jade); font-weight: 600; }
+
+/* ── 十善配對 ── */
+.match-msg { min-height: 1.75em; margin: 6px 0; font-size: 0.95rem; text-align: center; color: var(--sea-700); }
+.match-board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0 16px; }
+.match-col { display: grid; align-content: start; gap: 8px; }
+.match-item { display: flex; flex-direction: column; justify-content: center; min-height: 54px; padding: 6px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font: inherit; line-height: 1.3; text-align: center; cursor: pointer; }
+.match-right .match-item { font-family: var(--serif); letter-spacing: 0.05em; }
+.match-name { font-family: var(--serif); font-size: 1.05rem; letter-spacing: 0.1em; color: var(--sea-800); }
+.match-sub { font-size: 0.75rem; color: var(--ink-3); }
+.match-item.selected { border-color: var(--gold); background: #fff7d6; box-shadow: 0 0 0 3px rgba(214, 178, 86, 0.25); }
+.match-item.matched { border-color: var(--jade); background: var(--jade-soft); cursor: default; }
+.match-item.shake { animation: shake 0.35s; }
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+/* ── 十善大地 ── */
+.land-frame { position: relative; aspect-ratio: 3 / 2; margin: 12px 0; overflow: hidden; border: 1px solid var(--gold-2); border-radius: 12px; box-shadow: 0 8px 22px rgba(13, 61, 74, 0.2); }
+.land-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.land-grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr); }
+.land-tile { padding: 0; border: 0; outline: 1px solid rgba(255, 255, 255, 0.28); outline-offset: -1px; background: transparent; color: var(--sea-700); font-family: var(--serif); font-size: 0.88rem; letter-spacing: 0.06em; cursor: pointer; }
+.land-tile.mist { background: linear-gradient(160deg, rgba(243, 249, 247, 0.98), rgba(205, 227, 222, 0.96) 60%, rgba(176, 208, 202, 0.96)); }
+.land-tile.clear { cursor: default; opacity: 1; }
+.land-count { font-weight: 600; text-align: center; color: var(--sea-700); }
+.land-complete { margin: 16px 0; padding: 16px; border: 1px solid var(--gold-2); border-radius: 12px; background: #fff; }
+.land-thanks { margin-top: 12px; color: var(--ink-2); }
+.land-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 22px; }
+.land .hint { text-align: center; }
+
+/* ── 每日十善 ── */
+.daily-date { margin: 2px 0 14px; color: var(--ink-3); }
+.daily-quote { margin-bottom: 12px; padding: 12px 14px; border-left: 3px solid var(--gold-2); border-radius: 0 10px 10px 0; background: #fffbea; font-family: var(--serif); font-size: 1.1rem; line-height: 1.95; letter-spacing: 0.05em; }
+.daily-list { margin: 0 0 14px; padding: 0; list-style: none; }
+.daily-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; }
+.daily-item input { flex: 0 0 26px; width: 26px; height: 26px; margin: 3px 0 0; accent-color: var(--jade); }
+.daily-text { display: flex; flex-direction: column; }
+.daily-name { font-family: var(--serif); font-size: 1.1rem; letter-spacing: 0.1em; color: var(--sea-800); }
+.daily-ask { font-size: 0.95rem; color: var(--ink-2); }
+.daily-count { margin: 8px 0 2px; font-size: 1.15rem; font-weight: 600; text-align: center; color: var(--sea-700); }
+.daily-closing { margin-bottom: 22px; text-align: center; color: var(--ink-2); }
+.daily-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 10px 0; }
+.daily-day { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 0.82rem; color: var(--ink-3); }
+.daily-day.today { border-color: var(--gold-2); box-shadow: 0 0 0 2px rgba(214, 178, 86, 0.2); }
+.daily-dot { width: 28px; height: 28px; border-radius: 50%; background: var(--paper-3); font-size: 0.85rem; line-height: 28px; text-align: center; }
+.daily-day.has .daily-dot { background: var(--pearl-lit); color: #4a3608; font-weight: 700; }
+.daily-streak { min-height: 1.5em; text-align: center; color: var(--gold); }
+.daily .hint { text-align: center; }
+
+/* ── 關於本書 ── */
+.about-sec { margin-top: 26px; }
+.about-sec h2 { margin-bottom: 10px; font-size: 1.1rem; letter-spacing: 0.08em; }
+.about-sec p, .about-sec li { margin-bottom: 8px; font-size: 0.97rem; color: var(--ink-2); }
+.about-sec a { color: var(--sea-500); text-underline-offset: 3px; }
+.about-notice, .about-version { padding-left: 1.4em; }
+.about-notice li, .about-version li { font-size: 0.9rem; }
+
+.boot, .load-error { padding: 72px 24px; text-align: center; color: var(--ink-2); }
+.load-error h1 { margin-bottom: 12px; font-family: var(--serif); font-size: 1.4rem; color: var(--sea-800); }
+.load-error p { margin-bottom: 16px; }
+
+/* ── 寬螢幕：左圖右文 ── */
+@media (min-width: 1000px) {
+  #app { max-width: 1120px; }
+  .view { padding: 36px 44px 72px; }
+  .chapter { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 44px; align-items: start; }
+  .ch-side { position: sticky; top: 76px; }
+  .cover { display: grid; grid-template-columns: 1.25fr 1fr; align-items: center; min-height: 100dvh; margin: -36px -44px -72px; }
+  .cover-art { height: 100%; aspect-ratio: auto; border-right: 2px solid var(--gold-2); border-bottom: 0; }
+  .toc, .match, .land, .daily, .about { max-width: 660px; margin: 0 auto; }
+}
+
+/* 舊瀏覽器沒有 aspect-ratio：十善大地的圖是絕對定位，沒有高度會整個塌掉，用 padding 撐出 3:2 */
+@supports not (aspect-ratio: 1) {
+  .land-frame::before { content: ""; display: block; padding-top: 66.667%; }
+  .art-frame img, .cover-art img { height: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pearl.pop, .match-item.shake { animation: none; }
+  .pearl { transition: none; }
+}
