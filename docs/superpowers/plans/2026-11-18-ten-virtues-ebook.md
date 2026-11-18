@@ -3,6 +3,8 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
 > 執行方式：使用者已選「直接做」，由同一個 session 自己逐項實作（native），不停下來等審。
+>
+> **狀態（2026-11-18）：** Task 1–9 完成並上線。Task 10 的部落格文章已存成草稿，等使用者審稿後發布。上線後追加了三件事（細節見 git log 與 spec 的「追加」一節）：使用者要求的點圖放大；獨立審查白話與註解後的修正；獨立程式審查後的修正（觸控誤翻頁、放著過夜、兩個分頁、嵌入時的瀏覽歷程等）。下面的核取方塊沒有逐一回頭打勾。
 
 **Goal:** 做出一本可以在手機上從頭讀到尾、帶五種互動的《十善業道經》網頁電子書，發布到 GitHub Pages，並在 omilkyway.org 建立介紹文章草稿。
 
