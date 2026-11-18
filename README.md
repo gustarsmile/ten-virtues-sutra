@@ -14,7 +14,7 @@
 - **每日十善**：對應經文「晝夜常念思惟觀察善法」，每天十項自我檢核。
 - **點圖放大**：封面和各章插圖點一下就全螢幕看完整的圖（版面上的是裁切過的），點任意處、✕、Esc 或手機返回鍵關閉。做法比照《天堂遊記》。「我的十善大地」要十方雲霧都散開之後才能放大。
 
-進度只存在讀者自己的瀏覽器裡（`localStorage`），沒有帳號。唯一的外部資源是 Google Analytics 的 Google 代碼（GA4 評估 ID `G-3K95NEBV8G`，GA 帳戶「Ten Virtues Sutra」、資源 ten-virtues-sutra，2026-11-19 加入），只統計瀏覽，不碰閱讀紀錄；「關於本書」頁有照實說明。代碼寫在 `index.html` 的 `<head>`，ID 另外記在 `js/config.js` 的 `GA_MEASUREMENT_ID`，換 ID 時兩邊一起改（`tests/html.test.js` 會檢查）。
+進度只存在讀者自己的瀏覽器裡（`localStorage`），沒有帳號。唯一的外部資源是 Google Analytics 的 Google 代碼（GA4 評估 ID `G-3K95NEBV8G`，GA 帳戶「Ten Virtues Sutra」416892633、資源 ten-virtues-sutra 565065016，2026-11-19 加入），只統計瀏覽，不碰閱讀紀錄；「關於本書」頁有照實說明。代碼寫在 `index.html` 的 `<head>`，ID 另外記在 `js/config.js` 的 `GA_MEASUREMENT_ID`，換 ID 時兩邊一起改（`tests/html.test.js` 會檢查）。
 
 ## 執行
 
