@@ -4,6 +4,13 @@ import { benefitList, virtueChapters, chapterRaw, splitSentences } from '../book
 
 const ORDINAL = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 
+// 整列都可以點，但這兩種情況不算「點這一列」：
+// 點在已經展開的白話或註解上（人家在讀）、或是正在拖曳選取文字（想複製經文）
+function isReading(e) {
+  if (e.target?.closest?.('.plain, .gloss-note')) return true;
+  return String(globalThis.getSelection?.() ?? '') !== '';
+}
+
 // 一段原文＋註解框＋白話
 function passageBlock(block, glossary, plainNodes) {
   const box = el('div', 'passage');
@@ -53,14 +60,18 @@ function benefitsBlock(block, ch, ctx) {
     };
     show(store.isLit(ch.id, i));
 
-    // 整列都可以點（手機上寶珠比較小）；點難詞時 gloss 會擋下來，不會誤亮
-    row.addEventListener('click', () => {
-      if (!store.lightPearl(ch.id, i)) return;
+    const light = () => {
+      const fresh = store.lightPearl(ch.id, i);
+      // 不管是不是「新」點亮的都把畫面亮起來：這顆可能已經在另一個分頁點過了
       show(true);
-      pearl.classList.add('pop');
+      if (fresh) pearl.classList.add('pop');
       refresh();
       ctx.refreshTopbar();
-    });
+    };
+    // 直接按寶珠是明確的操作；點整列（手機上寶珠比較小）則要排除正在讀字、選字的情況。
+    // 點難詞時 gloss 會擋下來，不會誤亮
+    pearl.addEventListener('click', (e) => { e.stopPropagation(); light(); });
+    row.addEventListener('click', (e) => { if (!isReading(e)) light(); });
 
     append(row, pearl, append(el('div', 'pearl-body'), append(el('p', 'raw-line'), node), note, plain));
     list.appendChild(row);
@@ -102,7 +113,7 @@ function foldBlock(block, glossary) {
       row.classList.toggle('open', !plain.hidden);
     };
     toggle.addEventListener('click', (e) => { e.stopPropagation(); flip(); });
-    row.addEventListener('click', flip);
+    row.addEventListener('click', (e) => { if (!isReading(e)) flip(); });
 
     append(row, toggle, append(el('p', 'raw-line'), node), note, plain);
     box.appendChild(row);

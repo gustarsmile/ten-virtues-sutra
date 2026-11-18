@@ -71,7 +71,8 @@ h1, h2, h3, p, blockquote, figure { margin: 0; }
 }
 .topbar button {
   min-height: 44px;
-  padding: 6px 10px;
+  padding: 6px 8px;
+  white-space: nowrap;
   border: 0;
   border-radius: 8px;
   background: none;
@@ -80,13 +81,18 @@ h1, h2, h3, p, blockquote, figure { margin: 0; }
   font-size: 0.92rem;
   cursor: pointer;
 }
-.topbar .tb-title { font-family: var(--serif); font-size: 1.05rem; letter-spacing: 0.22em; color: var(--gold-3); }
+.topbar .tb-title { font-family: var(--serif); font-size: 1.05rem; letter-spacing: 0.15em; color: var(--gold-3); }
+@media (max-width: 350px) {
+  .topbar button { padding: 6px 5px; font-size: 0.86rem; }
+  .topbar .tb-title { font-size: 0.98rem; letter-spacing: 0.08em; }
+}
 .tb-pearls { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .tb-pearls::before { content: ""; width: 13px; height: 13px; border-radius: 50%; background: var(--pearl-lit); box-shadow: 0 0 6px rgba(233, 199, 101, 0.8); }
 
 /* ── 版面 ── */
 .view { padding: 22px 20px 56px; }
 .page h1 { font-family: var(--serif); font-size: 2rem; line-height: 1.4; letter-spacing: 0.12em; color: var(--sea-800); }
+.page h1:focus, .page h1:focus-visible { outline: none; } /* 換頁時程式會把焦點放到標題上，不是使用者按出來的 */
 h2 { font-family: var(--serif); font-size: 1.2rem; letter-spacing: 0.2em; color: var(--sea-700); }
 .ch-kicker { margin-bottom: 4px; font-size: 0.85rem; letter-spacing: 0.15em; color: var(--gold); }
 .ch-sub { margin: 2px 0 16px; font-size: 1.05rem; color: var(--ink-2); }
@@ -107,6 +113,7 @@ h2 { font-family: var(--serif); font-size: 1.2rem; letter-spacing: 0.2em; color:
 
 /* 包著插圖的按鈕：點了放大。右下角一個小小的放大鏡，讓手機上的人知道可以點 */
 .zoom-btn { position: relative; display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.zoom-btn:focus-visible { outline-offset: -4px; }
 .zoom-btn::after {
   content: "";
   position: absolute;
@@ -149,6 +156,8 @@ h2 { font-family: var(--serif); font-size: 1.2rem; letter-spacing: 0.2em; color:
 .cover-actions { display: grid; gap: 10px; max-width: 340px; margin: 0 auto 14px; }
 .cover-progress { margin-bottom: 4px; font-size: 0.9rem; color: var(--gold); }
 .cover-links { display: flex; justify-content: center; gap: 16px; margin-top: 8px; }
+.embed-note { max-width: 26em; margin: 4px auto 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 0.88rem; color: var(--ink-2); }
+.embed-note a { color: var(--sea-500); text-underline-offset: 3px; }
 
 /* ── 經文 ── */
 .sec-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
@@ -166,16 +175,12 @@ h2 { font-family: var(--serif); font-size: 1.2rem; letter-spacing: 0.2em; color:
   color: var(--ink-2);
 }
 .term {
-  margin: 0;
-  padding: 0;
-  border: 0;
   border-bottom: 2px dotted var(--gold-2);
   border-radius: 2px;
-  background: none;
-  color: inherit;
-  font: inherit;
-  letter-spacing: inherit;
   cursor: pointer;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-tap-highlight-color: rgba(214, 178, 86, 0.3);
 }
 .term[aria-expanded="true"] { background: var(--gold-3); }
 .gloss-note {
@@ -300,10 +305,13 @@ h2 { font-family: var(--serif); font-size: 1.2rem; letter-spacing: 0.2em; color:
 .land-frame { position: relative; aspect-ratio: 3 / 2; margin: 12px 0; overflow: hidden; border: 1px solid var(--gold-2); border-radius: 12px; box-shadow: 0 8px 22px rgba(13, 61, 74, 0.2); }
 .land-frame img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 .land-frame .zoom-btn { position: absolute; top: 0; left: 0; }
+.land-frame.art-missing { display: block; background: var(--paper-3); } /* 蓋過 .art-missing 的隱藏：雲霧格子還要能點 */
+.land-frame.art-missing img { visibility: hidden; }
 .land-grid { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr); }
-.land-tile { padding: 0; border: 0; outline: 1px solid rgba(255, 255, 255, 0.28); outline-offset: -1px; background: transparent; color: var(--sea-700); font-family: var(--serif); font-size: 0.88rem; letter-spacing: 0.06em; cursor: pointer; }
+.land-tile { padding: 0; border: 0; box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.4); background: transparent; color: var(--sea-700); font-family: var(--serif); font-size: 0.88rem; letter-spacing: 0.06em; cursor: pointer; }
 .land-tile.mist { background: linear-gradient(160deg, rgba(243, 249, 247, 0.98), rgba(205, 227, 222, 0.96) 60%, rgba(176, 208, 202, 0.96)); }
 .land-tile.clear { cursor: default; opacity: 1; }
+.land-tile:focus-visible { outline-offset: -4px; }
 .land-count { font-weight: 600; text-align: center; color: var(--sea-700); }
 .land-complete { margin: 16px 0; padding: 16px; border: 1px solid var(--gold-2); border-radius: 12px; background: #fff; }
 .land-thanks { margin-top: 12px; color: var(--ink-2); }
@@ -385,7 +393,6 @@ h2 { font-family: var(--serif); font-size: 1.2rem; letter-spacing: 0.2em; color:
   #app { max-width: 1120px; }
   .view { padding: 36px 44px 72px; }
   .chapter { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 44px; align-items: start; }
-  .ch-side { position: sticky; top: 76px; }
   .cover { display: grid; grid-template-columns: 1.25fr 1fr; align-items: center; min-height: 100dvh; margin: -36px -44px -72px; }
   .cover-art { height: 100%; aspect-ratio: auto; border-right: 2px solid var(--gold-2); border-bottom: 0; }
   .toc, .match, .land, .daily, .about { max-width: 660px; margin: 0 auto; }
@@ -395,6 +402,11 @@ h2 { font-family: var(--serif); font-size: 1.2rem; letter-spacing: 0.2em; color:
 @supports not (aspect-ratio: 1) {
   .land-frame::before { content: ""; display: block; padding-top: 66.667%; }
   .art-frame img, .cover-art img { height: auto; }
+}
+
+/* 左欄（章名、插圖、導讀）跟著捲動固定住——視窗要夠高才這樣做，不然導讀的下半段會一直被切在畫面外 */
+@media (min-width: 1000px) and (min-height: 700px) {
+  .ch-side { position: sticky; top: 76px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

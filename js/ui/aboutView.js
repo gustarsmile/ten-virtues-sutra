@@ -87,6 +87,7 @@ export function renderAbout(root, ctx) {
   page.appendChild(section(
     '你的紀錄',
     el('p', null, '閱讀進度、點亮的寶珠和每日十善的紀錄，只存在這台裝置的瀏覽器裡，不會上傳到任何地方。換裝置或清除瀏覽資料，紀錄就會不見。'),
+    el('p', null, '有些瀏覽器會自己清：例如 iPhone 的 Safari，大約一個星期沒有回來讀，就會把網站存的資料清掉；如果是嵌在別的網頁裡閱讀，關掉 Safari 之後進度就不在了。想保存得久一點，請直接開啟本書的網址來讀。'),
     reset,
   ));
 

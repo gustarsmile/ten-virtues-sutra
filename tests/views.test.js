@@ -236,7 +236,7 @@ describe('情境題', () => {
 describe('難詞註解', () => {
   it('點難詞出現註解，再點一次收起來', () => {
     app.go('ch/3');
-    const term = $$('button.term').find((b) => b.textContent === '阿耨多羅三藐三菩提');
+    const term = $$('.term').find((b) => b.textContent === '阿耨多羅三藐三菩提');
     expect(term).toBeTruthy();
     term.click();
     expect($('.gloss-note:not([hidden])').textContent).toContain('無上正等正覺');
@@ -246,7 +246,7 @@ describe('難詞註解', () => {
   it('同一段點另一個詞，註解換成新的', () => {
     app.go('ch/1');
     const first = $('.passage');
-    const terms = [...first.querySelectorAll('button.term')];
+    const terms = [...first.querySelectorAll('.term')];
     terms[0].click();
     terms[1].click();
     const open = [...first.querySelectorAll('.gloss-note:not([hidden])')];

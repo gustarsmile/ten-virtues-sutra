@@ -1,5 +1,5 @@
 // 原文裡的難詞：畫成可以點的字，點了在該段下方顯示註解。
-// 只在原文上「加按鈕」，不增刪任何字——node.textContent 永遠等於 raw。
+// 只在原文上「加標記」，不增刪任何字——node.textContent 永遠等於 raw。
 import { el } from './dom.js';
 
 // 找出每個詞條在 raw 裡第一個「不和別的詞條重疊」的位置
@@ -37,21 +37,31 @@ export function rawWithTerms(raw, termKeys, glossary) {
   let pos = 0;
   for (const r of locate(raw, termKeys || [], glossary)) {
     if (r.start > pos) node.appendChild(document.createTextNode(raw.slice(pos, r.start)));
-    const b = el('button', 'term', raw.slice(r.start, r.end));
-    b.type = 'button';
-    b.setAttribute('aria-expanded', 'false');
-    b.addEventListener('click', (e) => {
+    // 用 <span role="button"> 而不是 <button>：按鈕是不能斷行的一整塊，
+    // 像「阿耨多羅三藐三菩提」這種長詞會把手機上的一行撐壞；span 可以照常斷行、選取、複製。
+    const term = el('span', 'term', raw.slice(r.start, r.end));
+    term.setAttribute('role', 'button');
+    term.setAttribute('tabindex', '0');
+    term.setAttribute('aria-expanded', 'false');
+    const toggle = (e) => {
       e.stopPropagation(); // 不要順便觸發整列的點擊（點亮寶珠、展開白話）
-      if (open === b) { close(); return; }
+      if (open === term) { close(); return; }
       close();
       note.textContent = '';
       note.appendChild(el('strong', null, r.entry.term));
       note.appendChild(document.createTextNode(`　${r.entry.note}`));
       note.hidden = false;
-      b.setAttribute('aria-expanded', 'true');
-      open = b;
+      term.setAttribute('aria-expanded', 'true');
+      open = term;
+    };
+    term.addEventListener('click', toggle);
+    // span 沒有按鈕內建的鍵盤行為，自己補 Enter 和空白鍵
+    term.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault(); // 空白鍵預設會捲動頁面
+      toggle(e);
     });
-    node.appendChild(b);
+    node.appendChild(term);
     pos = r.end;
   }
   if (pos < raw.length) node.appendChild(document.createTextNode(raw.slice(pos)));

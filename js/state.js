@@ -1,7 +1,7 @@
 // 閱讀進度：點亮的寶珠、讀過的章、情境題的選擇、配對是否完成、上次讀到哪。
 import { SAVE_KEY } from './config.js';
 import { benefitList } from './book.js';
-import { resolveStorage, readJson, writeJson, removeKey, isPlainObject } from './storage.js';
+import { resolveStorage, tryRead, writeJson, removeKey, isPlainObject } from './storage.js';
 
 const VERSION = 1;
 const isIndex = (n) => Number.isInteger(n) && n >= 0;
@@ -30,18 +30,38 @@ function sanitize(saved) {
 
 export function createStore(storage) {
   const store = resolveStorage(storage);
-  let s = sanitize(readJson(store, SAVE_KEY));
-  const save = () => writeJson(store, SAVE_KEY, { v: VERSION, ...s });
+  let s = sanitize(tryRead(store, SAVE_KEY).value);
+  // 上一次寫入有沒有成功。寫不進去之後，storage 裡的就是舊資料，不能再拿來蓋掉手上的
+  let synced = true;
+
+  // 重新讀 storage：同一本書可能開在另一個分頁，那邊也在寫。
+  // 每次要改之前都先讀一次再改，兩邊才不會拿著各自的舊資料互相蓋掉。
+  function refresh() {
+    if (!synced) return;
+    const r = tryRead(store, SAVE_KEY);
+    if (r.ok) s = sanitize(r.value);
+  }
+  function change(mutate) {
+    refresh();
+    mutate();
+    synced = writeJson(store, SAVE_KEY, { v: VERSION, ...s }) || !store;
+  }
 
   const isLit = (chId, idx) => (s.pearls[chId] || []).includes(idx);
 
   return {
-    // 新點亮才回 true（畫面據此決定要不要播音效、更新計數）
+    refresh,
+
+    // 新點亮才回 true（畫面據此決定要不要播動畫）
     lightPearl(chId, idx) {
-      if (!isIndex(idx) || isLit(chId, idx)) return false;
-      (s.pearls[chId] ||= []).push(idx);
-      save();
-      return true;
+      if (!isIndex(idx)) return false;
+      let fresh = false;
+      change(() => {
+        if (isLit(chId, idx)) return;
+        (s.pearls[chId] ||= []).push(idx);
+        fresh = true;
+      });
+      return fresh;
     },
     isLit,
     litCount: (chId) => (s.pearls[chId] || []).length,
@@ -49,22 +69,23 @@ export function createStore(storage) {
 
     markSeen(chId) {
       if (s.seen.includes(chId)) return;
-      s.seen.push(chId);
-      save();
+      change(() => { if (!s.seen.includes(chId)) s.seen.push(chId); });
     },
     isSeen: (chId) => s.seen.includes(chId),
 
     setScenario(chId, i) {
       if (!isIndex(i)) return;
-      s.scenario[chId] = i;
-      save();
+      change(() => { s.scenario[chId] = i; });
     },
     getScenario: (chId) => (chId in s.scenario ? s.scenario[chId] : null),
 
-    setMatchDone() { s.match = true; save(); },
+    setMatchDone() { change(() => { s.match = true; }); },
     isMatchDone: () => s.match,
 
-    setLast(route) { s.last = String(route); save(); },
+    setLast(route) {
+      if (s.last === String(route)) return;
+      change(() => { s.last = String(route); });
+    },
     getLast: () => s.last,
 
     // 一善「圓滿」＝該章的功德寶珠全部點亮
@@ -82,6 +103,7 @@ export function createStore(storage) {
     reset() {
       s = empty();
       removeKey(store, SAVE_KEY);
+      synced = true;
     },
   };
 }

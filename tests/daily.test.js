@@ -130,3 +130,52 @@ describe('存檔', () => {
     }
   });
 });
+
+describe('set(i, value)：直接指定勾或不勾', () => {
+  it('指定成勾、指定成不勾；重複指定不會翻來翻去', () => {
+    const d = createDaily(memoryStorage(), clock(2026, 11, 18));
+    expect(d.set(2, true)).toBe(true);
+    expect(d.set(2, true)).toBe(true);
+    expect(d.countToday()).toBe(1);
+    expect(d.set(2, false)).toBe(false);
+    expect(d.countToday()).toBe(0);
+  });
+  it('超出範圍不理會', () => {
+    const d = createDaily(memoryStorage(), clock(2026, 11, 18));
+    expect(d.set(10, true)).toBe(false);
+    expect(d.set(-1, true)).toBe(false);
+    expect(d.countToday()).toBe(0);
+  });
+});
+
+describe('同時開兩個分頁（每日十善）', () => {
+  it('兩邊各勾各的，不會互相蓋掉', () => {
+    const storage = memoryStorage();
+    const now = clock(2026, 11, 18);
+    const a = createDaily(storage, now);
+    const b = createDaily(storage, now);
+    b.toggle(0); b.toggle(1);
+    a.toggle(5);
+    expect(createDaily(storage, now).today().filter(Boolean)).toHaveLength(3);
+    expect(a.countToday()).toBe(3);
+  });
+  it('refresh() 之後看得到另一個分頁勾的', () => {
+    const storage = memoryStorage();
+    const now = clock(2026, 11, 18);
+    const a = createDaily(storage, now);
+    createDaily(storage, now).toggle(7);
+    expect(a.countToday()).toBe(0);
+    a.refresh();
+    expect(a.today()[7]).toBe(true);
+  });
+  it('寫入失敗之後，不會被 storage 裡的舊資料蓋掉', () => {
+    const now = clock(2026, 11, 18);
+    const old = JSON.stringify({ v: 1, days: { '2026-11-18': [true, ...Array(9).fill(false)] } });
+    const storage = { getItem: () => old, setItem: () => { throw new Error('QuotaExceededError'); }, removeItem: () => {} };
+    const d = createDaily(storage, now);
+    d.toggle(1); d.toggle(2);
+    expect(d.countToday()).toBe(3);
+    d.refresh();
+    expect(d.countToday()).toBe(3);
+  });
+});

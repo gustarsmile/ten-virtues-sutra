@@ -1,5 +1,5 @@
 import { el, button, append, artFigure, cnNumber } from './dom.js';
-import { BOOK_TITLE, TOTAL_PEARLS, SOURCE } from '../config.js';
+import { BOOK_TITLE, BOOK_URL, TOTAL_PEARLS, SOURCE } from '../config.js';
 import { parseRoute, toHash } from '../router.js';
 
 // 「繼續閱讀」按鈕上的文字：第五章 離邪行／十善配對／十善大地
@@ -36,6 +36,17 @@ export function renderCover(root, ctx) {
   const lit = store.totalLit();
   const lands = store.completedVirtues(book.chapters).length;
   if (lit > 0) body.appendChild(el('p', 'cover-progress', `寶珠 ${lit}／${TOTAL_PEARLS}　十善大地 ${lands}／10`));
+
+  // 嵌在文章裡讀：畫面小，而且 iPhone 的 Safari 關掉之後，嵌入頁面裡存的進度就沒了
+  if (ctx.embedded) {
+    const note = el('p', 'embed-note', '你正在文章裡閱讀。');
+    const a = el('a', null, '在新分頁開啟整本書');
+    a.href = BOOK_URL;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    append(note, a, document.createTextNode('，畫面比較大，進度也保存得比較久。'));
+    body.appendChild(note);
+  }
 
   const links = el('nav', 'cover-links');
   links.setAttribute('aria-label', '其他頁面');

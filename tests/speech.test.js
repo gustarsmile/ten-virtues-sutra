@@ -141,3 +141,16 @@ describe('createSpeech', () => {
     expect(s.isSpeaking()).toBe(false);
   });
 });
+
+describe('pickVoice：Android 的語言標記', () => {
+  it('zh_TW_#Hant 認得出是台灣中文，而且優先於排在前面的 zh_CN_#Hans', () => {
+    const v = pickVoice([{ lang: 'zh_CN_#Hans', name: 'cn' }, { lang: 'zh_TW_#Hant', name: 'tw' }]);
+    expect(v.name).toBe('tw');
+  });
+  it('zh-TW-x-variant 這類帶尾巴的寫法也算台灣中文', () => {
+    expect(pickVoice([{ lang: 'zh-CN', name: 'cn' }, { lang: 'zh-TW-x-twn', name: 'tw' }]).name).toBe('tw');
+  });
+  it('不會把別的地區誤認成台灣（zh-TWX 不是 zh-TW）', () => {
+    expect(pickVoice([{ lang: 'zh-CN', name: 'cn' }, { lang: 'zh-twx', name: 'odd' }]).name).toBe('cn');
+  });
+});

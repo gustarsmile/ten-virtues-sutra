@@ -1,6 +1,6 @@
 // 每日十善：每天十項自我檢核。紀錄以「本地日期」為鍵，只存在瀏覽器裡。
 import { DAILY_KEY } from './config.js';
-import { resolveStorage, readJson, writeJson, isPlainObject } from './storage.js';
+import { resolveStorage, tryRead, writeJson, isPlainObject } from './storage.js';
 
 const VERSION = 1;
 const ITEMS = 10;
@@ -25,15 +25,23 @@ function sanitize(saved) {
 }
 
 const count = (rec) => rec.filter(Boolean).length;
+const inRange = (i) => Number.isInteger(i) && i >= 0 && i < ITEMS;
 
 export function createDaily(storage, now = () => new Date()) {
   const store = resolveStorage(storage);
-  let days = sanitize(readJson(store, DAILY_KEY));
+  let days = sanitize(tryRead(store, DAILY_KEY).value);
+  let synced = true; // 上一次寫入有沒有成功（同 state.js：寫不進去之後不再拿 storage 的舊資料蓋掉手上的）
 
+  // 另一個分頁可能也在勾：要改之前先重讀
+  function refresh() {
+    if (!synced) return;
+    const r = tryRead(store, DAILY_KEY);
+    if (r.ok) days = sanitize(r.value);
+  }
   function save() {
     const keep = Object.keys(days).sort().slice(-KEEP_DAYS);
     days = Object.fromEntries(keep.map((k) => [k, days[k]]));
-    writeJson(store, DAILY_KEY, { v: VERSION, days });
+    synced = writeJson(store, DAILY_KEY, { v: VERSION, days }) || !store;
   }
 
   // 往回數第 n 天的日期鍵（n = 0 是今天）。用年月日去減，跨月、跨年、日光節約都不會錯
@@ -44,16 +52,26 @@ export function createDaily(storage, now = () => new Date()) {
 
   const today = () => [...(days[keyDaysAgo(0)] || Array(ITEMS).fill(false))];
 
+  // 每次都重新算「今天」：網頁開著跨過午夜，寫進去的就是新的一天
+  function set(i, value) {
+    if (!inRange(i)) return false;
+    refresh();
+    const rec = today();
+    rec[i] = Boolean(value);
+    days[keyDaysAgo(0)] = rec;
+    save();
+    return rec[i];
+  }
+
   return {
+    refresh,
     today,
-    // 每次都重新算「今天」：網頁開著跨過午夜，勾的就是新的一天
+    todayKey: () => keyDaysAgo(0),
+    set,
     toggle(i) {
-      if (!Number.isInteger(i) || i < 0 || i >= ITEMS) return false;
-      const rec = today();
-      rec[i] = !rec[i];
-      days[keyDaysAgo(0)] = rec;
-      save();
-      return rec[i];
+      if (!inRange(i)) return false;
+      refresh();
+      return set(i, !today()[i]);
     },
     countToday: () => count(today()),
     // 最近 n 天，由舊到新；沒有紀錄的那天 count 是 null

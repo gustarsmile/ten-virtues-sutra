@@ -55,9 +55,14 @@ export function openLightbox(src, alt = '', doc = document, trigger = null) {
   // 用區域變數記住「這一次」開啟前的狀態，不受之後的開啟影響
   const prevOverflow = doc.body.style.overflow;
   doc.body.style.overflow = 'hidden';
+  // 後面的頁面整個設成 inert：Tab 跑不到後面、螢幕閱讀器也只唸大圖。
+  // 只動原本不是 inert 的，關閉時才不會把別人設的也解開
+  const behind = [...doc.body.children].filter((n) => n !== overlay && !n.inert);
+  for (const n of behind) n.inert = true;
   layer = pushLayer(() => {
     overlay.classList.remove('open');
     doc.body.style.overflow = prevOverflow;
+    for (const n of behind) n.inert = false; // 先解開，下面才把焦點還得回去
     layer = null;
     if (trigger?.isConnected) trigger.focus({ preventScroll: true });
   }, doc);

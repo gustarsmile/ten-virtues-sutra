@@ -1,7 +1,7 @@
 // 組裝：依 hash 路由畫出對應的頁面，並管理頂列、翻頁鍵與滑動手勢。
 import { parseRoute, toHash } from './router.js';
 import { pages, nextRoute, prevRoute } from './book.js';
-import { BOOK_TITLE, TOTAL_PEARLS } from './config.js';
+import { BOOK_TITLE, TOTAL_PEARLS, SAVE_KEY, DAILY_KEY } from './config.js';
 import { el, button, append } from './ui/dom.js';
 import { hasOpenLayer } from './ui/layer.js';
 import { renderCover } from './ui/coverView.js';
@@ -14,16 +14,28 @@ import { renderAbout } from './ui/aboutView.js';
 
 const FIXED_TITLES = { toc: '目錄', match: '十善配對', land: '我的十善大地', daily: '每日十善', about: '關於本書' };
 
+// 滑動翻頁的門檻
+const SWIPE_MIN_X = 90;      // 水平至少滑這麼多
+const SWIPE_RATIO = 2.5;     // 水平位移要明顯大於垂直（不然是在上下捲）
+const SWIPE_MAX_MS = 600;    // 超過這個時間就是在拖、在選字，不是在翻頁
+const SWIPE_EDGE = 24;       // 螢幕左右邊緣留給系統手勢（iPhone 從邊緣滑是返回）
+
 export function routeTitle(book, route) {
   if (route === '' || route == null) return '封面';
   const r = parseRoute(toHash(route), book.chapters.length);
   return r.name === 'ch' ? book.chapters[r.no - 1].title : FIXED_TITLES[r.name] || '封面';
 }
 
-export function createApp({ root, book, store, daily, speech, win = globalThis.window }) {
+// 是不是被嵌在別人的網頁裡（部落格文章的 iframe）。跨網域時讀 top 會丟例外，那也算是
+function detectEmbedded(win) {
+  try { return win.self !== win.top; } catch { return true; }
+}
+
+export function createApp({ root, book, store, daily, speech, win = globalThis.window, embedded = detectEmbedded(win) }) {
   const doc = root.ownerDocument;
   const order = pages(book.chapters);
   let current = null;
+  let rendered = false;
 
   // 頂列：目錄｜書名（回封面）｜寶珠數（到十善大地）
   const topbar = el('header', 'topbar');
@@ -45,7 +57,7 @@ export function createApp({ root, book, store, daily, speech, win = globalThis.w
   }
 
   const ctx = {
-    book, store, daily, speech, go, refreshTopbar,
+    book, store, daily, speech, go, refreshTopbar, embedded,
     routeTitle: (route) => routeTitle(book, route),
     isPage: (route) => order.includes(route),
     next: (route) => nextRoute(book.chapters, route),
@@ -75,6 +87,17 @@ export function createApp({ root, book, store, daily, speech, win = globalThis.w
     preloadNext(r.route);
     doc.title = r.name === 'cover' ? `${BOOK_TITLE}｜互動電子書` : `${routeTitle(book, r.route)}｜${BOOK_TITLE}`;
     try { win.scrollTo(0, 0); } catch { /* 測試環境沒有捲動 */ }
+
+    // 換頁後把焦點放到新頁的標題：螢幕閱讀器會唸出新的一頁，鍵盤也從頁首繼續。
+    // 第一次載入不動焦點（嵌在別的網頁裡時，不該一載入就把焦點搶過來）
+    if (rendered) {
+      const h1 = view.querySelector('h1');
+      if (h1) {
+        h1.setAttribute('tabindex', '-1'); // 可以被程式聚焦，但不會出現在 Tab 順序裡
+        h1.focus({ preventScroll: true });
+      }
+    }
+    rendered = true;
   }
 
   function preloadNext(route) {
@@ -86,8 +109,15 @@ export function createApp({ root, book, store, daily, speech, win = globalThis.w
 
   function go(route) {
     if (route == null) return;
+    // 大圖開著時不換頁：它在瀏覽歷程上持有一筆紀錄，這時換頁會讓「上一頁」錯位
+    if (hasOpenLayer()) return;
     const hash = toHash(route);
-    if (win.location.hash !== hash) win.location.hash = hash;
+    if (win.location.hash !== hash) {
+      // 嵌在別的網頁裡：用 replace，不然每翻一頁，外面那個網頁就多一筆「上一頁」，
+      // 讀完十五章要按十五次返回才離得開那篇文章
+      if (embedded) win.location.replace(hash);
+      else win.location.hash = hash;
+    }
     render();
   }
 
@@ -97,9 +127,11 @@ export function createApp({ root, book, store, daily, speech, win = globalThis.w
   };
   win.addEventListener('hashchange', onHashChange);
 
-  // 鍵盤左右鍵翻頁（正在打字或操作控制項時不搶）
+  // 鍵盤左右鍵翻頁
   const onKeydown = (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.shiftKey) return;     // Shift＋方向鍵是在延伸選取
+    if (e.repeat) return;       // 按住不放的連發：不要一路翻到最後一頁
     if (hasOpenLayer()) return; // 大圖開著：方向鍵不翻頁，Esc 交給 layer.js
     if (e.target?.closest?.('input, textarea, select')) return;
     const to = e.key === 'ArrowRight' ? ctx.next(current) : e.key === 'ArrowLeft' ? ctx.prev(current) : undefined;
@@ -107,28 +139,60 @@ export function createApp({ root, book, store, daily, speech, win = globalThis.w
   };
   doc.addEventListener('keydown', onKeydown);
 
-  // 手機左右滑翻頁：水平位移要夠長、而且明顯大於垂直位移，避免上下捲動時誤翻
+  // 手機左右滑翻頁。只認「單指、快速、明顯水平」的一滑；下面每一條排除的都是實際會誤翻的情況
   let start = null;
   view.addEventListener('touchstart', (e) => {
-    const t = e.changedTouches?.[0];
-    start = t ? { x: t.clientX, y: t.clientY } : null;
-  }, { passive: true });
-  view.addEventListener('touchend', (e) => {
-    const t = e.changedTouches?.[0];
-    if (!start || !t) return;
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
     start = null;
-    if (Math.abs(dx) < 90 || Math.abs(dx) < Math.abs(dy) * 2.5) return;
+    if (e.touches?.length !== 1) return;                          // 第二根手指放下來（捏合縮放、兩指點）
+    if ((win.visualViewport?.scale ?? 1) > 1.05) return;          // 畫面被放大：左右滑是在平移
+    const t = e.touches[0];
+    if (t.clientX < SWIPE_EDGE || t.clientX > win.innerWidth - SWIPE_EDGE) return; // 邊緣是系統的返回手勢
+    if (e.target?.closest?.('.match-board, input')) return;       // 配對盤面上拖來拖去、勾選框
+    start = { id: t.identifier, x: t.clientX, y: t.clientY, at: Date.now() };
+  }, { passive: true });
+  view.addEventListener('touchcancel', () => { start = null; }, { passive: true });
+  view.addEventListener('touchend', (e) => {
+    const from = start;
+    start = null;
+    if (!from || e.touches?.length) return;                       // 還有手指在螢幕上
+    const t = [...(e.changedTouches || [])].find((c) => c.identifier === from.id);
+    if (!t) return;                                               // 放開的不是當初那根手指
+    if (Date.now() - from.at > SWIPE_MAX_MS) return;              // 慢慢拖（長按、選字）
+    if (String(win.getSelection?.() ?? '') !== '') return;        // 正在選字
+    const dx = t.clientX - from.x;
+    const dy = t.clientY - from.y;
+    if (Math.abs(dx) < SWIPE_MIN_X || Math.abs(dx) < Math.abs(dy) * SWIPE_RATIO) return;
     const to = dx < 0 ? ctx.next(current) : ctx.prev(current);
     if (to != null) go(to);
   }, { passive: true });
+
+  // 同一本書開在另一個分頁、那邊改了進度：把手上的資料更新成最新的。
+  // 不重畫整頁（會把正在讀的人捲回最上面），只更新頂列的寶珠數
+  const onStorage = (e) => {
+    if (e.key != null && e.key !== SAVE_KEY && e.key !== DAILY_KEY) return; // key 為 null 是整個被清空
+    store.refresh();
+    daily.refresh();
+    refreshTopbar();
+  };
+  win.addEventListener('storage', onStorage);
+
+  // 分頁切回來：資料更新成最新的；每日十善可能已經跨日，整頁重畫成今天
+  const onVisible = () => {
+    if (doc.visibilityState === 'hidden') return;
+    store.refresh();
+    daily.refresh();
+    refreshTopbar();
+    if (current === 'daily' && !hasOpenLayer()) render();
+  };
+  doc.addEventListener('visibilitychange', onVisible);
 
   // 掛在 window／document 上的監聽要能拿掉：同一頁若重建 app（測試、日後的熱重載），
   // 舊的那個不該繼續跟著翻頁
   function destroy() {
     win.removeEventListener('hashchange', onHashChange);
+    win.removeEventListener('storage', onStorage);
     doc.removeEventListener('keydown', onKeydown);
+    doc.removeEventListener('visibilitychange', onVisible);
   }
 
   return { render, go, destroy };

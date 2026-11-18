@@ -124,3 +124,71 @@ describe('存檔出問題時不當機', () => {
     expect(s.litCount('ch03')).toBe(2); // 只留 0 和 3
   });
 });
+
+describe('同時開兩個分頁（共用同一份存檔）', () => {
+  it('兩邊各自點寶珠，不會互相蓋掉', () => {
+    const storage = memoryStorage();
+    const a = createStore(storage);
+    const b = createStore(storage);
+    for (let i = 0; i < 10; i += 1) b.lightPearl('ch04', i);
+    a.lightPearl('ch03', 0); // a 的記憶體裡還沒有 b 的進度
+    expect(createStore(storage).totalLit()).toBe(11);
+    expect(a.totalLit()).toBe(11);
+  });
+  it('已讀、情境題、配對、上次位置也一樣不互蓋', () => {
+    const storage = memoryStorage();
+    const a = createStore(storage);
+    const b = createStore(storage);
+    b.markSeen('ch05'); b.setScenario('ch05', 2); b.setMatchDone();
+    a.markSeen('ch03'); a.setScenario('ch03', 1); a.setLast('ch/3');
+    const fresh = createStore(storage);
+    expect(fresh.isSeen('ch05') && fresh.isSeen('ch03')).toBe(true);
+    expect(fresh.getScenario('ch05')).toBe(2);
+    expect(fresh.getScenario('ch03')).toBe(1);
+    expect(fresh.isMatchDone()).toBe(true);
+    expect(fresh.getLast()).toBe('ch/3');
+  });
+  it('refresh() 之後看得到另一個分頁的進度', () => {
+    const storage = memoryStorage();
+    const a = createStore(storage);
+    createStore(storage).lightPearl('ch04', 3);
+    expect(a.totalLit()).toBe(0);
+    a.refresh();
+    expect(a.isLit('ch04', 3)).toBe(true);
+  });
+  it('另一個分頁清除進度後，這邊 refresh 也跟著清空', () => {
+    const storage = memoryStorage();
+    const a = createStore(storage);
+    a.lightPearl('ch03', 0);
+    createStore(storage).reset();
+    a.refresh();
+    expect(a.totalLit()).toBe(0);
+  });
+  it('這顆在另一個分頁已經點亮：這邊再點回 false（不重複計數）', () => {
+    const storage = memoryStorage();
+    const a = createStore(storage);
+    createStore(storage).lightPearl('ch03', 0);
+    expect(a.lightPearl('ch03', 0)).toBe(false);
+    expect(a.litCount('ch03')).toBe(1);
+  });
+});
+
+describe('存不進去的時候', () => {
+  it('寫入失敗（容量滿了）：之後的操作不會被 storage 裡的舊資料蓋掉', () => {
+    const old = JSON.stringify({ v: 1, pearls: { ch03: [0] }, seen: [], scenario: {}, match: false, last: '' });
+    const storage = { getItem: () => old, setItem: () => { throw new Error('QuotaExceededError'); }, removeItem: () => {} };
+    const s = createStore(storage);
+    expect(s.totalLit()).toBe(1);
+    s.lightPearl('ch03', 1);
+    s.lightPearl('ch03', 2);
+    expect(s.litCount('ch03')).toBe(3); // 沒有因為重讀舊存檔而掉回 1 或 2
+    s.refresh();
+    expect(s.litCount('ch03')).toBe(3);
+  });
+  it('讀得到但一直丟例外的 storage：refresh 不會清掉記憶體裡的進度', () => {
+    const s = createStore(brokenStorage());
+    s.lightPearl('ch03', 0);
+    s.refresh();
+    expect(s.totalLit()).toBe(1);
+  });
+});

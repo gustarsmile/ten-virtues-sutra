@@ -10,8 +10,9 @@ export function renderDaily(root, ctx) {
   const page = el('section', 'page daily');
   append(page, el('p', 'ch-kicker', '把經文帶回生活'), el('h1', null, '每日十善'));
 
-  const todayKey = daily.history(1)[0].key;
-  const t = toDate(todayKey);
+  // 這個畫面是為「哪一天」畫的。分頁放著過夜之後，這一天就不是今天了
+  const shownKey = daily.todayKey();
+  const t = toDate(shownKey);
   page.appendChild(el('p', 'daily-date', `${t.getFullYear()} 年 ${t.getMonth() + 1} 月 ${t.getDate()} 日（${WEEK[t.getDay()]}）`));
   append(page, el('blockquote', 'daily-quote', data.quote), el('p', 'lead', data.intro));
 
@@ -19,15 +20,18 @@ export function renderDaily(root, ctx) {
   const closing = el('p', 'daily-closing');
   const week = el('div', 'daily-week');
   const streak = el('p', 'daily-streak');
+  const boxes = [];
 
   function refresh() {
+    const today = daily.today();
+    boxes.forEach((box, i) => { box.checked = today[i]; }); // 以存檔為準（另一個分頁可能也勾了）
     const n = daily.countToday();
     count.textContent = `今天 ${n}／10`;
     closing.textContent = n === 0 ? data.closing.none : n === 10 ? data.closing.all : data.closing.some;
     week.textContent = '';
     for (const day of daily.history(7)) {
       const d = toDate(day.key);
-      const cell = el('div', `daily-day${day.count ? ' has' : ''}${day.key === todayKey ? ' today' : ''}`);
+      const cell = el('div', `daily-day${day.count ? ' has' : ''}${day.key === shownKey ? ' today' : ''}`);
       cell.setAttribute('aria-label', `${d.getMonth() + 1} 月 ${d.getDate()} 日：${day.count == null ? '沒有紀錄' : `${day.count} 項`}`);
       append(cell, el('span', 'daily-dow', WEEK[d.getDay()]), el('span', 'daily-dot', day.count ? String(day.count) : '·'));
       week.appendChild(cell);
@@ -37,13 +41,22 @@ export function renderDaily(root, ctx) {
   }
 
   const list = el('ol', 'daily-list');
-  const today = daily.today();
   data.items.forEach((item, i) => {
     const label = el('label', 'daily-item');
     const box = el('input');
     box.type = 'checkbox';
-    box.checked = today[i];
-    box.addEventListener('change', () => { box.checked = daily.toggle(i); refresh(); });
+    boxes.push(box);
+    box.addEventListener('change', () => {
+      if (daily.todayKey() !== shownKey) {
+        // 已經過了午夜：畫面上還是昨天的勾。只有「打勾」才算數（記在新的一天）；
+        // 「取消」是想取消昨天的，新的一天本來就沒勾，不必寫。然後整頁換成今天。
+        if (box.checked) daily.set(i, true);
+        go('daily');
+        return;
+      }
+      daily.set(i, box.checked); // 直接寫成畫面上的狀態，不用「反轉」——存檔和畫面不同步時才不會勾反
+      refresh();
+    });
     append(label, box, append(el('span', 'daily-text'), el('span', 'daily-name', item.name), el('span', 'daily-ask', item.ask)));
     list.appendChild(append(el('li'), label));
   });

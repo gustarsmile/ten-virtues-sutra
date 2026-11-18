@@ -1,7 +1,8 @@
 // 朗讀：包一層瀏覽器內建的 speechSynthesis。不支援的環境全部靜默。
 
 const norm = (v) => String(v?.lang || '').toLowerCase().replace(/_/g, '-');
-const isTaiwan = (l) => /^(zh|cmn)(-hant)?-tw$/.test(l);
+// Android Chrome 回報的是 zh_TW_#Hant 這種帶尾巴的寫法，所以 -tw 後面允許再接東西
+const isTaiwan = (l) => /^(zh|cmn)(-hant)?-tw(-|$)/.test(l);
 // 國語才拿來唸；粵語（zh-HK、yue）讀音差太多，寧可不唸
 const isMandarin = (l) => (l.startsWith('zh') && !l.startsWith('zh-hk') && !l.startsWith('zh-mo')) || l.startsWith('cmn');
 
