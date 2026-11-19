@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, copyFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { PREFIX, PROMPTS } from './art-prompts.mjs';
+import { PROMPTS, promptFor } from './art-prompts.mjs';
 
 // draw 技能的位置：預設在使用者家目錄的 .claude/skills/draw/，也可以用環境變數 DRAW_PY 指定
 const DRAW_PY = process.env.DRAW_PY || join(homedir(), '.claude', 'skills', 'draw', 'draw.py');
@@ -17,10 +17,10 @@ const wanted = process.argv.slice(2);
 const names = wanted.length ? wanted : Object.keys(PROMPTS).filter((n) => !existsSync(`art-src/${n}.png`));
 
 for (const name of names) {
-  const prompt = PROMPTS[name];
+  const prompt = promptFor(name); // 畫風前綴＋場景
   if (!prompt) { console.error(`沒有這張圖的提示詞：${name}`); process.exitCode = 1; continue; }
   console.log(`▶ ${name}`);
-  const r = spawnSync('python', [DRAW_PY, PREFIX + prompt, '--size', '1536x1024', '--quality', 'low', '--name', name, '--outdir', RAW], { stdio: 'inherit' });
+  const r = spawnSync('python', [DRAW_PY, prompt, '--size', '1536x1024', '--quality', 'low', '--name', name, '--outdir', RAW], { stdio: 'inherit' });
   if (r.status !== 0) { console.error(`✗ ${name} 生圖失敗`); process.exitCode = 1; continue; }
   const latest = readdirSync(RAW).filter((f) => f.startsWith(`${name}_`) && f.endsWith('.png')).sort().pop();
   if (latest) { copyFileSync(`${RAW}/${latest}`, `art-src/${name}.png`); console.log(`✓ art-src/${name}.png ← ${latest}`); }
