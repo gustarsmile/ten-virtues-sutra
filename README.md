@@ -2,7 +2,7 @@
 
 《十善業道經》（唐・實叉難陀譯，大正藏 T15 No.600）的網頁電子書：全經原文、白話、註解、朗讀，加上五種取自經文的互動。蔬米 OMILKYWAY「經典互動」系列之一，和弟子規小遊戲、三款遊記遊戲同一個家族。
 
-正式網址：<https://gustarsmile.github.io/ten-virtues-sutra/>
+正式網址：<https://edu.omilkyway.org/ten-virtues-sutra/>
 
 ## 這本書有什麼
 
@@ -14,7 +14,7 @@
 - **每日十善**：對應經文「晝夜常念思惟觀察善法」，每天十項自我檢核。
 - **點圖放大**：封面和各章插圖點一下就全螢幕看完整的圖（版面上的是裁切過的），點任意處、✕、Esc 或手機返回鍵關閉。做法比照《天堂遊記》。「我的十善大地」要十方雲霧都散開之後才能放大。
 
-進度只存在讀者自己的瀏覽器裡（`localStorage`），沒有帳號。唯一的外部資源是 Google Analytics 的 Google 代碼（GA4 評估 ID `G-3K95NEBV8G`，GA 帳戶「Ten Virtues Sutra」416892633、資源 ten-virtues-sutra 565065016，2026-11-19 加入），只統計瀏覽，不碰閱讀紀錄；「關於本書」頁有照實說明。代碼寫在 `index.html` 的 `<head>`，ID 另外記在 `js/config.js` 的 `GA_MEASUREMENT_ID`，換 ID 時兩邊一起改（`tests/html.test.js` 會檢查）。
+進度只存在讀者自己的瀏覽器裡（`localStorage`），沒有帳號。唯一的外部資源是 Google Analytics 的 Google 代碼（GA4 評估 ID `G-3K95NEBV8G`，GA 帳戶 OMILKYWAY.ORG 213184215、資源 ten-virtues-sutra 565065016，2026-11-19 加入），只統計瀏覽，不碰閱讀紀錄；「關於本書」頁有照實說明。代碼寫在 `index.html` 的 `<head>`，ID 另外記在 `js/config.js` 的 `GA_MEASUREMENT_ID`，換 ID 時兩邊一起改（`tests/html.test.js` 會檢查）。
 
 GA 自己只會在打開網頁時算一次瀏覽，看不到書裡翻頁（換的只是 `#` 後面）。所以 `js/app.js` 每翻到新的一頁會自己送一筆 `page_view`：標題是章名（例如「離殺生｜十善業道經」），網址用路由當路徑（`…/ten-virtues-sutra/ch/3`）。在 GA 的「網頁和畫面」報表就能看到各章有多少人讀。第一次載入不送（Google 代碼自己會送），同一頁重畫也不重送。
 
@@ -36,7 +36,7 @@ npx vitest run     # 全部測試
 
 ```html
 <iframe
-  src="https://gustarsmile.github.io/ten-virtues-sutra/"
+  src="https://edu.omilkyway.org/ten-virtues-sutra/"
   title="十善業道經互動電子書"
   style="width: 100%; max-width: 560px; height: 820px; border: 0; border-radius: 8px; display: block; margin: 0 auto;"
   loading="lazy">

@@ -1,11 +1,11 @@
 export const BOOK_TITLE = '十善業道經';
 export const BOOK_SUBTITLE = '互動電子書・十善大地';
 
-// 部署定址：GitHub Pages（帳號 gustarsmile）。改這個值之後，index.html 的 og:url／og:image 也要一起改
+// 部署定址：GitHub Pages（帳號 gustarsmile），自訂網域 edu.omilkyway.org 設定在 gustarsmile.github.io 那個 repo。改這個值之後，index.html 的 og:url／og:image 也要一起改
 // （tests/html.test.js 會守門）。
-export const BOOK_URL = 'https://gustarsmile.github.io/ten-virtues-sutra/';
+export const BOOK_URL = 'https://edu.omilkyway.org/ten-virtues-sutra/';
 
-// Google Analytics 4：帳戶「Ten Virtues Sutra」(416892633)／資源 ten-virtues-sutra (565065016)／網頁串流 16369018709（2026-11-19 建立）。
+// Google Analytics 4：帳戶 OMILKYWAY.ORG (213184215，2026-11-19 從原本的 Ten Virtues Sutra 帳戶搬過來)／資源 ten-virtues-sutra (565065016)／網頁串流 16369018709（2026-11-19 建立）。
 // 代碼本身寫在 index.html 的 <head>；換 ID 時兩邊要一起改（tests/html.test.js 會檢查）。
 export const GA_MEASUREMENT_ID = 'G-3K95NEBV8G';
 
